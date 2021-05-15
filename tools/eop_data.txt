@@ -1,0 +1,2 @@
+drwxr-xr-x    3 10002    121            17 Oct 07  2020 pub
+lrwxrwxrwx    1 0        0               8 Apr 10  2018 slr -> pub/slr/
