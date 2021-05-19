@@ -548,7 +548,7 @@ A = [];
 B = [];
 C = [];
 D = [];
-for i = 1:length(t_up_down(:,1))
+for i = 1:length(gnt(:,1))
     coordinate_station_itrs0=[-2358691.210,5410611.484,2410087.607];
     coordinate_station_itrs = (coordinate_station_itrs0 - tide_cor(i))';   
     
