@@ -14,7 +14,7 @@
 function ChebApp = Cheb1D(t, N, Ta, Tb, C)
 % Check validity
 if ( (t<Ta) || (Tb<t) )
-    error('ERROR: Time out of range in Cheb3D::Value\n');
+    error('ERROR: Time out of range in Cheb1D::Value\n');
 end
 % Clenshaw algorithm
 tau = (2*t-Ta-Tb)/(Tb-Ta);  
