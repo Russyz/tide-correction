@@ -192,15 +192,15 @@ RH = pthdata(4); %
 data_and_reflector=dir('*.a15');
 if length(data_and_reflector) == 0
     data_and_reflector=dir('*.l21');
+    if length(data_and_reflector) == 0
+        data_and_reflector=dir('*.l17');
         if length(data_and_reflector) == 0
-            data_and_reflector=dir('*.l17');
+            data_and_reflector=dir('*.a11');
             if length(data_and_reflector) == 0
-                data_and_reflector=dir('*.a11');
-                    if length(data_and_reflector) == 0
-                        data_and_reflector=dir('*.a14');
-                    end
+                data_and_reflector=dir('*.a14');
             end
         end
+    end
 end
 
 
@@ -243,6 +243,8 @@ errorbar(vel_radi_meas,o_minus_c/2,gnt(:,3),'.r','MarkerSize',12)
 set(gca,'FontSize',40);
 xlabel('Radial velocity [meters/second]','fontsize',40);
 ylabel('O-C residual [meters]','fontsize',40);
+set(gcf,'outerposition',get(0,'screensize'));
+savefig('pho1.fig')
 mean(o_minus_c/2)
 %% 测站偏心修正
 % Load P.T.H. data
@@ -261,5 +263,111 @@ for i = 1:length(gnt(:,1))
 end
 
 std(o_minus_c)
+%% 测站偏心修正后计算
+load('pre_data')
+pre_utc=pre_data(:,9)*24*3600 - 0.5;
+pre_TOF=pre_data(:,10);
+dev_pre_TOF = [pre_data(2,10)-pre_data(1,10);pre_data(2:end,10) - pre_data(1:end-1,10)]/2;
 
+vel_radi_meas = lagint(pre_utc,dev_pre_TOF,gnt(:,1),10) * c;
+coeff = polyfit(vel_radi_meas,o_minus_c/2,1)
+% delta_t = coeff(1)
+% bias = coeff(2)
+figure
+% plot(vel_radi_meas,o_minus_c/2,'.b','MarkerSize',12)
+errorbar(vel_radi_meas,o_minus_c/2,gnt(:,3),'.r','MarkerSize',12)
+set(gca,'FontSize',40);
+xlabel('Radial velocity [meters/second]','fontsize',40);
+ylabel('O-C residual [meters]','fontsize',40);
+% txt = ['σ=',num2str(std(o_minus_c)*1e2),'cm',',mean=',num2str(mean(o_minus_c/2)),'m']
+% text(max(vel_radi_meas),max(o_minus_c/2),txt,'Color','red','FontSize',14)
 
+set(gcf,'outerposition',get(0,'screensize'));
+savefig('pho2.fig')
+
+mean(o_minus_c/2)
+
+%%
+% %% 检核 @GCRS  -- version 2
+% % Load P.T.H. data
+% pth_file = dir('*.pth');
+% fid = fopen(pth_file.name,'r');
+% pthdata = fscanf(fid,'%f %f %f %f');
+% wavelength = 1.064; %um
+% latitude = 22.34639411111111; % °
+% height = 0.405713; % km
+% baroPressure = pthdata(2) * 1e2; % Pa
+% temperature = pthdata(3); % ℃
+% RH = pthdata(4); %
+% data_and_reflector=dir('*.a15');
+% if length(data_and_reflector) == 0
+%     data_and_reflector=dir('*.l21');
+%         if length(data_and_reflector) == 0
+%             data_and_reflector=dir('*.l17');
+%             if length(data_and_reflector) == 0
+%                 data_and_reflector=dir('*.a11');
+%                     if length(data_and_reflector) == 0
+%                         data_and_reflector=dir('*.a14');
+%                     end
+%             end
+%         end
+% end
+% 
+% 
+% temp = data_and_reflector.name;
+% target = temp(end-2:end);
+% YR = str2num(temp(1:4));
+% MONTH = str2num(temp(5:6));
+% DATE = str2num(temp(7:8));
+% % coordinate_station_itrs=[-2358691.210,5410611.484,2410087.607];
+% o_minus_c = [];
+% % if coeff
+% % coeff = [0 0 ];
+% for i = 1:length(gnt(:,1))
+%     %     syms delta_x delta_y delta_z
+%     hour(i) = floor(gnt(i,1)/3600);
+%     minu(i) = floor((gnt(i,1) - hour(i) * 3600)/60);
+%     sec(i) = gnt(i,1) - hour(i) * 3600 - minu(i) * 60;
+%     tof = cal_tof(target,YR,MONTH,DATE,hour(i),minu(i),sec(i));
+%     
+%     resi = (gnt(i,2) - tof) * c;
+%     o_minus_c = [o_minus_c;resi];
+%     
+% end
+% 
+% std(o_minus_c)
+% 
+% %% 测站偏心修正计算
+% load('pre_data')
+% pre_utc=pre_data(:,9)*24*3600 - 0.5;
+% pre_TOF=pre_data(:,10);
+% dev_pre_TOF = [pre_data(2,10)-pre_data(1,10);pre_data(2:end,10) - pre_data(1:end-1,10)]/2;
+% 
+% vel_radi_meas = lagint(pre_utc,dev_pre_TOF,gnt(:,1),10) * c;
+% coeff = polyfit(vel_radi_meas,o_minus_c/2,1)
+% % delta_t = coeff(1)
+% % bias = coeff(2)
+% figure
+% % plot(vel_radi_meas,o_minus_c/2,'.b','MarkerSize',12)
+% errorbar(vel_radi_meas,o_minus_c/2,gnt(:,3),'.r','MarkerSize',12)
+% set(gca,'FontSize',40);
+% xlabel('Radial velocity [meters/second]','fontsize',40);
+% ylabel('O-C residual [meters]','fontsize',40);
+% mean(o_minus_c/2)
+% %% 测站偏心修正
+% % Load P.T.H. data
+% t_bias = coeff(1);
+% o_minus_c = [];
+% for i = 1:length(gnt(:,1))
+%     %     syms delta_x delta_y delta_z
+%     hour(i) = floor(gnt(i,1)/3600);
+%     minu(i) = floor((gnt(i,1) - hour(i) * 3600)/60);
+%     sec(i) = gnt(i,1) - hour(i) * 3600 - minu(i) * 60;
+%     tof = cal_tof(target,YR,MONTH,DATE,hour(i),minu(i),sec(i)+t_bias);
+%     
+%     resi = (gnt(i,2) - tof) * c;
+%     o_minus_c = [o_minus_c;resi];
+%     
+% end
+% 
+% std(o_minus_c)
